@@ -1,5 +1,5 @@
 {
-  "AppSyncApiName": "appsyncsdkdemo",
+  "AppSyncApiName": "appsync",
   "DynamoDBBillingMode": "PAY_PER_REQUEST",
   "DynamoDBEnableServerSideEncryption": false
 }

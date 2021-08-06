@@ -1,6 +1,6 @@
 {
   "api": {
-    "appsyncsdkdemo": {
+    "appsync": {
       "service": "AppSync",
       "providerPlugin": "awscloudformation",
       "output": {
@@ -9,19 +9,12 @@
             "authenticationType": "API_KEY",
             "apiKeyConfig": {
               "apiKeyExpirationDays": 365,
-              "description": "todos"
+              "description": "appsync"
             }
           },
           "additionalAuthenticationProviders": []
         }
       }
-    }
-  },
-  "hosting": {
-    "amplifyhosting": {
-      "service": "amplifyhosting",
-      "providerPlugin": "awscloudformation",
-      "type": "manual"
     }
   }
 }
