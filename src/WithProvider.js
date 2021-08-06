@@ -1,6 +1,5 @@
 // import AppSyncConfig from "./aws-exports";
-import { ApolloProvider } from "react-apollo";
-import { ApolloClient, InMemoryCache } from "@apollo/client";
+import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
 
 import App from "./App";
 
