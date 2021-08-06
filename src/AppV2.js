@@ -5,14 +5,14 @@
 // import { graphqlMutation } from "aws-appsync-react";
 
 // // include description in docs to match default setup
-// // const CreateTodo = gql`
-// //   mutation createTodo($name: String!, $description: String!) {
-// //     createTodo(input: { name: $name, description: $description }) {
-// //       name
-// //       description
-// //     }
-// //   }
-// // `;
+// const CreateTodo = gql`
+//   mutation createTodo($name: String!, $description: String!) {
+//     createTodo(input: { name: $name, description: $description }) {
+//       name
+//       description
+//     }
+//   }
+// `;
 
 // // include description in docs to match default setup
 // const listTodos = gql`
