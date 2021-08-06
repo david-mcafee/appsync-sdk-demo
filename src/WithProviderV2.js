@@ -1,9 +1,10 @@
 import AWSAppSyncClient from "aws-appsync";
 import AppSyncConfig from "./aws-exports";
 import { ApolloProvider } from "react-apollo";
-import { Rehydrated } from "aws-appsync-react"; // this needs to also be installed when working with React
+// aws-appsync-react is in apolloV2 branch
+import { Rehydrated } from "aws-appsync-react";
 
-import App from "./App";
+import AppV2 from "./AppV2";
 
 const client = new AWSAppSyncClient({
   url: AppSyncConfig.aws_appsync_graphqlEndpoint,
@@ -18,7 +19,7 @@ const client = new AWSAppSyncClient({
 const WithProvider = () => (
   <ApolloProvider client={client}>
     <Rehydrated>
-      <App />
+      <AppV2 />
     </Rehydrated>
   </ApolloProvider>
 );
