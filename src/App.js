@@ -6,8 +6,14 @@ import { v4 as uuidv4 } from "uuid";
 const initialState = { name: "", description: "" };
 
 const Todos = () => {
+  // Component State
   const [formState, setFormState] = useState(initialState);
 
+  function setInput(key, value) {
+    setFormState({ ...formState, [key]: value });
+  }
+
+  // List
   const LIST_TODOS = gql`
     query listTodos {
       listTodos {
@@ -20,6 +26,15 @@ const Todos = () => {
     }
   `;
 
+  const {
+    loading: listLoading,
+    data: listData,
+    error: listError,
+  } = useQuery(LIST_TODOS);
+
+  const todos = listData?.listTodos?.items || [];
+
+  // Create
   const CREATE_TODO = gql`
     mutation createTodo($input: CreateTodoInput!) {
       createTodo(input: $input) {
@@ -30,16 +45,10 @@ const Todos = () => {
     }
   `;
 
-  const { loading, data, error } = useQuery(LIST_TODOS);
-
-  const todos = data?.listTodos?.items || [];
-
-  const [addTodoMutateFunction, { createData, createLoading, createError }] =
-    useMutation(CREATE_TODO, { refetchQueries: [LIST_TODOS, "listTodos"] });
-
-  function setInput(key, value) {
-    setFormState({ ...formState, [key]: value });
-  }
+  // Optional: use `data`, `loading`, and `error`
+  const [addTodoMutateFunction] = useMutation(CREATE_TODO, {
+    refetchQueries: [LIST_TODOS, "listTodos"],
+  });
 
   async function addTodo() {
     try {
@@ -51,6 +60,38 @@ const Todos = () => {
     } catch (err) {
       console.log("error creating todo:", err);
     }
+  }
+
+  // Delete
+  const DELETE_TODO = gql`
+    mutation deleteTodo($input: DeleteTodoInput!) {
+      deleteTodo(input: $input) {
+        id
+        name
+        description
+      }
+    }
+  `;
+
+  // Optional: use `data`, `loading`, and `error`
+  const [deleteTodoMutateFunction] = useMutation(DELETE_TODO, {
+    refetchQueries: [LIST_TODOS, "listTodos"],
+  });
+
+  async function removeTodo(id) {
+    try {
+      deleteTodoMutateFunction({ variables: { input: { id } } });
+    } catch (err) {
+      console.log("error deleting todo:", err);
+    }
+  }
+
+  let status = "";
+
+  if (listLoading) {
+    status = "Loading todos...";
+  } else if (listError) {
+    status = "Error loading todos!";
   }
 
   return (
@@ -67,17 +108,14 @@ const Todos = () => {
       />
       <button onClick={addTodo}>Add Todo</button>
 
-      {!!createLoading ?? <h2>"Submitting..."</h2>}
-      {!!createError ?? <h2>"Submission error!"</h2>}
-      {!!createData ?? <h2>"Todo created!"</h2>}
-      {!!loading ?? <h2>"Loading todos..."</h2>}
-      {!!error ?? <h2>"Error loading todos!"</h2>}
+      <h2>{status}</h2>
 
       {todos.map((todo, index) => (
         // Update key in README to not use index
         <div key={todo.id ? todo.id : index}>
           <h2>{todo.name}</h2>
           <h3>{todo.description}</h3>
+          <button onClick={() => removeTodo(todo.id)}>Delete</button>
         </div>
       ))}
     </div>
@@ -87,7 +125,7 @@ const Todos = () => {
 const App = () => {
   return (
     <div>
-      <h1>Todos 🚀</h1>
+      <h1>Todos using Apollo V3 🚀</h1>
       <Todos />
     </div>
   );
