@@ -1,22 +1,35 @@
-import AppSyncConfig from "./aws-exports";
+import { createAuthLink } from 'aws-appsync-auth-link';
+import { createSubscriptionHandshakeLink } from 'aws-appsync-subscription-link';
+
 import {
+  ApolloLink,
   ApolloClient,
   ApolloProvider,
   InMemoryCache,
-  HttpLink,
+  createHttpLink,
 } from "@apollo/client";
+
+import AppSyncConfig from "./aws-exports";
+
 import App from "./App";
 
-// TODO: add this to AppSync SDK README
-const httpLink = new HttpLink({
-  uri: AppSyncConfig.aws_appsync_graphqlEndpoint,
-  headers: {
-    "X-Api-Key": AppSyncConfig.aws_appsync_apiKey,
-  },
-});
+
+const url = AppSyncConfig.aws_appsync_graphqlEndpoint;
+const region = AppSyncConfig.aws_appsync_region;
+const auth = {
+  type: AppSyncConfig.aws_appsync_authenticationType,
+  apiKey: AppSyncConfig.aws_appsync_apiKey,
+};
+
+const httpLink = createHttpLink({ uri: url });
+
+const link = ApolloLink.from([
+  createAuthLink({ url, region, auth }),
+  createSubscriptionHandshakeLink(url, httpLink)
+]);
 
 const client = new ApolloClient({
-  link: httpLink,
+  link,
   cache: new InMemoryCache(),
 });
 
