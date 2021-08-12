@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { gql } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client";
 import { v4 as uuidv4 } from "uuid";
@@ -8,7 +8,9 @@ const initialState = { name: "", description: "" };
 const Todos = () => {
   // Component State
   const [formState, setFormState] = useState(initialState);
+  const [todos, setTodos] = useState([]);
 
+  // Set state of form
   function setInput(key, value) {
     setFormState({ ...formState, [key]: value });
   }
@@ -27,12 +29,17 @@ const Todos = () => {
   `;
 
   const {
+    subscribeToMore,
     loading: listLoading,
     data: listData,
     error: listError,
   } = useQuery(LIST_TODOS);
 
-  const todos = listData?.listTodos?.items || [];
+  useEffect(() => {
+    if (listData) {
+      setTodos(listData?.listTodos?.items);
+    }
+  }, [listData]);
 
   // Create
   const CREATE_TODO = gql`
@@ -45,10 +52,12 @@ const Todos = () => {
     }
   `;
 
-  // Optional: use `data`, `loading`, and `error`
-  const [addTodoMutateFunction] = useMutation(CREATE_TODO, {
-    refetchQueries: [LIST_TODOS, "listTodos"],
-  });
+  // Optional: use `data`, `loading`, and `error`.
+  // Can also use refretch if not using a subscription:
+  // const [addTodoMutateFunction] = useMutation(CREATE_TODO, {
+  //   refetchQueries: [LIST_TODOS, "listTodos"],
+  // });
+  const [addTodoMutateFunction] = useMutation(CREATE_TODO);
 
   async function addTodo() {
     try {
@@ -85,6 +94,38 @@ const Todos = () => {
       console.log("error deleting todo:", err);
     }
   }
+
+  // Subscriptions
+  const CREATE_TODO_SUBSCRIPTION = gql`
+    subscription OnCreateTodo {
+      onCreateTodo {
+        id
+        name
+        description
+      }
+    }
+  `;
+
+  // TODO: something is misconfigured with this subscription
+  useEffect(() => {
+    subscribeToMore({
+      document: CREATE_TODO_SUBSCRIPTION,
+      updateQuery: (prev, { subscriptionData }) => {
+        if (!subscriptionData.data) {
+          return prev;
+        } else if (subscriptionData?.data?.onCreateTodo) {
+          // this shouldn't be necessary
+          const filter = todos.filter(
+            (todo) => subscriptionData?.data?.onCreateTodo?.id === todo.id
+          );
+          if (filter.length === 0) {
+            setTodos([...todos, subscriptionData?.data?.onCreateTodo]);
+          }
+          return;
+        }
+      },
+    });
+  });
 
   let status = "";
 
