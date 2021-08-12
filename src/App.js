@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { gql } from "@apollo/client";
+import { gql, useSubscription } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client";
 import { v4 as uuidv4 } from "uuid";
 
@@ -29,7 +29,6 @@ const Todos = () => {
   `;
 
   const {
-    subscribeToMore,
     loading: listLoading,
     data: listData,
     error: listError,
@@ -57,7 +56,12 @@ const Todos = () => {
   // const [addTodoMutateFunction] = useMutation(CREATE_TODO, {
   //   refetchQueries: [LIST_TODOS, "listTodos"],
   // });
-  const [addTodoMutateFunction] = useMutation(CREATE_TODO);
+  const [addTodoMutateFunction, { error: createError }] =
+    useMutation(CREATE_TODO);
+
+  if (createError) {
+    console.error(createError);
+  }
 
   async function addTodo() {
     try {
@@ -106,26 +110,19 @@ const Todos = () => {
     }
   `;
 
-  // TODO: something is misconfigured with this subscription
-  useEffect(() => {
-    subscribeToMore({
-      document: CREATE_TODO_SUBSCRIPTION,
-      updateQuery: (prev, { subscriptionData }) => {
-        if (!subscriptionData.data) {
-          return prev;
-        } else if (subscriptionData?.data?.onCreateTodo) {
-          // this shouldn't be necessary
-          const filter = todos.filter(
-            (todo) => subscriptionData?.data?.onCreateTodo?.id === todo.id
-          );
-          if (filter.length === 0) {
-            setTodos([...todos, subscriptionData?.data?.onCreateTodo]);
-          }
-          return;
-        }
-      },
-    });
-  });
+  const { data: createSubData, error: createSubError } = useSubscription(
+    CREATE_TODO_SUBSCRIPTION
+  );
+
+  if (
+    createSubData &&
+    todos.filter((todo) => todo.id === createSubData?.onCreateTodo?.id)
+      .length === 0
+  ) {
+    setTodos([...todos, createSubData?.onCreateTodo]);
+  } else if (createSubError) {
+    console.error(createSubError);
+  }
 
   let status = "";
 
