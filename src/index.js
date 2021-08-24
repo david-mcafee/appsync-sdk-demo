@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
-import WithProviderV2 from "./WithProviderV2";
+import WithProvider from "./WithProvider";
 import reportWebVitals from "./reportWebVitals";
 import Amplify from "aws-amplify";
 import awsExports from "./aws-exports";
@@ -10,7 +10,7 @@ Amplify.configure(awsExports);
 
 ReactDOM.render(
   <React.StrictMode>
-    <WithProviderV2 />
+    <WithProvider />
   </React.StrictMode>,
   document.getElementById("root")
 );
